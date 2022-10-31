@@ -13,16 +13,33 @@ var domain = fmt.Sprintf("gui/%d", os.Getuid())
 
 // Service is a LaunchAgent service.
 type Service struct {
+	// Name is the fully qualified name of the service e.g. com.id.doom
 	Name string
+	// ExecutablePath is the absolute path to the executable that will run the service
+	ExecutablePath string
+	// Argv is the list of arguments to pass to ExecutablePath
+	Argv []string
+	// RunAtLoad is whether the service should be started at login
+	RunAtLoad bool
+	// KeepAlive is whether the service should be restarted if it crashes
+	Keepalive bool
 }
 
-// New returns a Service with the given name for the current user
-func New(name string) *Service {
-	return &Service{name}
+// ForRunningProgram returns a Service with appropriate daemon defaults for the current running executable.
+func ForRunningProgram(name string, argv []string) (*Service, error) {
+	exe, err := os.Executable()
+	svc := &Service{
+		Name:           name,
+		ExecutablePath: exe,
+		Argv:           argv,
+		RunAtLoad:      true,
+		Keepalive:      true,
+	}
+	return svc, err
 }
 
 // UserSpecifier unambiguously identifies the service in subcommands.
-// e.g. gui/501/com.blakewilliams.rdm
+// e.g. gui/501/com.id.doom
 // See launchctl(1).
 func (s *Service) UserSpecifier() string {
 	return fmt.Sprintf("%s/%s", domain, s.Name)

@@ -2,28 +2,47 @@ package launchd
 
 import (
 	"fmt"
-	"os"
+	"time"
+
+	"github.com/brasic/launchd/state"
 )
 
 // Install sets up a new service by writing a plist file and telling launchd about it.
-func (s *Service) Install(plistFileContent []byte) (err error) {
-	if err = s.writePlist(plistFileContent); err != nil {
-		return
+func (s *Service) Install(argv []string) (err error) {
+	if !s.InstallState().Is(state.Installed) {
+		fmt.Print("Attempting to install launchd service... ")
+		content, err := s.RenderPlist()
+		if err != nil {
+			return err
+		}
+
+		if err = s.WritePlist(content); err != nil {
+			return err
+		}
+
+		if _, err = s.Bootstrap(); err != nil {
+			return err
+		}
+
+		fmt.Println("done!")
+		return nil
 	}
-	_, err = s.Bootstrap()
-	return
+	fmt.Println("Service is already installed.")
+	if s.waitUntilRunning(5 * time.Second) {
+		return nil
+	}
+	return fmt.Errorf("Timed out waiting for service to boot")
 }
 
-func (s *Service) writePlist(content []byte) error {
-	path, err := s.DefinitionPath()
-	if err != nil {
-		return fmt.Errorf("could not find definition path: %w", err)
+func (s *Service) waitUntilRunning(timeout time.Duration) bool {
+	_, timedOut := s.PollUntil(state.Running, timeout)
+	fmt.Printf(finalStatus(timedOut), s.UserSpecifier())
+	return !timedOut
+}
+
+func finalStatus(timedOut bool) string {
+	if timedOut {
+		return "timed out waiting for service to come up. Something is probably wrong.\nRun launchctl print %s` for more detail.\n"
 	}
-	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0644)
-	if err != nil {
-		return fmt.Errorf("could not create %s: %w", path, err)
-	}
-	defer f.Close()
-	_, err = f.Write(content)
-	return err
+	return "done!\nRun launchctl print %s` for more detail.\n"
 }

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plist version="1.0">
+  <dict>
+    <key>Label</key>
+    <string>{{ .Label }}</string>
+    <key>ProgramArguments</key>
+    <array>
+      <string>{{ .Executable }}</string>
+      {{ range .Argv }}
+      <string>{{.}}</string>
+      {{ end }}
+    </array>
+    <key>RunAtLoad</key>
+    {{ if .RunAtLoad }}<true/>{{ else }}<false/>{{ end }}
+    {{ if .KeepAlive }}
+    <key>KeepAlive</key>
+    <dict>
+      <key>SuccessfulExit</key>
+      <false/>
+    </dict>
+    {{ end }}
+    <key>ProcessType</key>
+    <string>Background</string>
+  </dict>
+</plist>
