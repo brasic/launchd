@@ -63,9 +63,6 @@ func (s *Service) launchctl(args ...string) ([]byte, error) {
 	cmd.Stderr = &stderr
 	err := cmd.Run()
 
-	fmt.Println("out", stdout.String())
-	fmt.Println("err", stderr.String())
-
 	if err != nil {
 		return nil, fmt.Errorf("(%w) running `launchctl %v` for %s:\n%s", err, args, s.Name, stderr.String())
 	}
