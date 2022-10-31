@@ -5,7 +5,10 @@ import (
 	"time"
 
 	"github.com/brasic/launchd/state"
+	"github.com/fatih/color"
 )
+
+var bold = color.New(color.FgCyan, color.Bold)
 
 // Install sets up a new service by writing a plist file and telling launchd about it.
 // It also starts the service and waits for it to come up if RunAtLoad is true.
@@ -35,13 +38,17 @@ func (s *Service) Install() (err error) {
 
 func (s *Service) waitUntilRunning(timeout time.Duration) bool {
 	_, timedOut := s.PollUntil(state.Running, timeout)
-	fmt.Printf(finalStatus(timedOut), s.UserSpecifier())
+	fmt.Println(finalStatus(timedOut, s.UserSpecifier()))
 	return !timedOut
 }
 
-func finalStatus(timedOut bool) string {
+func finalStatus(timedOut bool, specifier string) string {
+	cmd := bold.Sprintf("launchctl print %s", specifier)
+	var statusLine string
 	if timedOut {
-		return "timed out waiting for service to come up. Something is probably wrong.\nRun launchctl print %s` for more detail.\n"
+		statusLine = "timed out waiting for service to come up. Something is probably wrong.\nRun `%s` for more detail."
+	} else {
+		statusLine = "done!\nRun `%s` for more detail."
 	}
-	return "done!\nRun launchctl print %s` for more detail.\n"
+	return fmt.Sprintf(statusLine, cmd)
 }
