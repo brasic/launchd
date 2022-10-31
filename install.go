@@ -8,27 +8,26 @@ import (
 )
 
 // Install sets up a new service by writing a plist file and telling launchd about it.
-func (s *Service) Install(argv []string) (err error) {
-	if !s.InstallState().Is(state.Installed) {
-		fmt.Print("Attempting to install launchd service... ")
-		content, err := s.RenderPlist()
-		if err != nil {
-			return err
-		}
-
-		if err = s.WritePlist(content); err != nil {
-			return err
-		}
-
-		if _, err = s.Bootstrap(); err != nil {
-			return err
-		}
-
-		fmt.Println("done!")
+// It also starts the service and waits for it to come up if RunAtLoad is true.
+func (s *Service) Install() (err error) {
+	if s.InstallState().Is(state.Installed) {
+		// Nothing to do
 		return nil
 	}
-	fmt.Println("Service is already installed.")
-	if s.waitUntilRunning(5 * time.Second) {
+	content, err := s.RenderPlist()
+	if err != nil {
+		return err
+	}
+
+	if err = s.WritePlist(content); err != nil {
+		return err
+	}
+
+	if _, err = s.Bootstrap(); err != nil {
+		return err
+	}
+
+	if s.RunAtLoad && s.waitUntilRunning(5*time.Second) {
 		return nil
 	}
 	return fmt.Errorf("Timed out waiting for service to boot")
