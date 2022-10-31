@@ -20,7 +20,7 @@ func (s *Service) Bootstrap() ([]byte, error) {
 // Bootout uninstalls a service (`launchctl bootout` née `launchctl unload`)
 // Optionally deletes the service definition file (plist) as well.
 func (s *Service) Bootout(removePlist bool) error {
-	err := s.launchctlUnaryCommand("bootout")
+	_, err := s.launchctl("bootout", s.UserSpecifier())
 	if err != nil {
 		return err
 	}
@@ -39,24 +39,19 @@ func (s *Service) Bootout(removePlist bool) error {
 
 // Start a service (`launchctl start`)
 func (s *Service) Start() error {
-	return s.launchctlUnaryCommand("start")
+	_, err := s.launchctl("start", s.Name)
+	return err
 }
 
 // Stop a service (`launchctl stop`)
 func (s *Service) Stop() error {
-	return s.launchctlUnaryCommand("stop")
+	_, err := s.launchctl("stop", s.Name)
+	return err
 }
 
 // Print service state (`launchctl print`)
 func (s *Service) Print() ([]byte, error) {
 	return s.launchctl("print", s.UserSpecifier())
-}
-
-// Run a launchctl(1) subcommand against a service with the only argument being
-// the service name. Returns error if not successful.
-func (s *Service) launchctlUnaryCommand(command string) error {
-	_, err := s.launchctl(command, s.UserSpecifier())
-	return err
 }
 
 // Run a launchctl(1) subcommand for the service and return the output or an error
@@ -67,6 +62,9 @@ func (s *Service) launchctl(args ...string) ([]byte, error) {
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	err := cmd.Run()
+
+	fmt.Println("out", stdout.String())
+	fmt.Println("err", stderr.String())
 
 	if err != nil {
 		return nil, fmt.Errorf("(%w) running `launchctl %v` for %s:\n%s", err, args, s.Name, stderr.String())
