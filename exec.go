@@ -17,12 +17,13 @@ func (s *Service) Bootstrap() ([]byte, error) {
 }
 
 // Bootout uninstalls a service (`launchctl bootout` née `launchctl unload`)
-func (s *Service) Bootout() ([]byte, error) {
+func (s *Service) Bootout() error {
 	path, err := s.DefinitionPath()
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return s.launchctl("bootout", domain, path)
+	_, err = s.launchctl("bootout", domain, path)
+	return err
 }
 
 // Print service state (`launchctl print`)
