@@ -2,13 +2,10 @@
 <plist version="1.0">
   <dict>
     <key>Label</key>
-    <string>{{ .Label }}</string>
+    <string>{{ .Name }}</string>
     <key>ProgramArguments</key>
     <array>
-      <string>{{ .Executable }}</string>
-      {{ range .Argv }}
-      <string>{{.}}</string>
-      {{ end }}
+      <string>{{ .ExecutablePath }}</string>{{ range .Argv }}{{ printf "\n      " }}<string>{{ . }}</string>{{ end }}
     </array>
     <key>RunAtLoad</key>
     {{ if .RunAtLoad }}<true/>{{ else }}<false/>{{ end }}

@@ -22,7 +22,7 @@ type Service struct {
 	// RunAtLoad is whether the service should be started at login
 	RunAtLoad bool
 	// KeepAlive is whether the service should be restarted if it crashes
-	Keepalive bool
+	KeepAlive bool
 }
 
 // ForRunningProgram returns a Service with appropriate daemon defaults for the current running executable.
@@ -33,7 +33,7 @@ func ForRunningProgram(name string, argv []string) (*Service, error) {
 		ExecutablePath: exe,
 		Argv:           argv,
 		RunAtLoad:      true,
-		Keepalive:      true,
+		KeepAlive:      true,
 	}
 	return svc, err
 }
