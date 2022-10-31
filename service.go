@@ -26,16 +26,15 @@ type Service struct {
 }
 
 // ForRunningProgram returns a Service with appropriate daemon defaults for the current running executable.
-func ForRunningProgram(name string, argv []string) (*Service, error) {
-	exe, err := os.Executable()
-	svc := &Service{
+func ForRunningProgram(name string, argv []string) *Service {
+	exe := filepath.Base(os.Args[0])
+	return &Service{
 		Name:           name,
 		ExecutablePath: exe,
 		Argv:           argv,
 		RunAtLoad:      true,
 		KeepAlive:      true,
 	}
-	return svc, err
 }
 
 // UserSpecifier unambiguously identifies the service in subcommands.
