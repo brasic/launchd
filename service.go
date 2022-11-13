@@ -27,7 +27,10 @@ type Service struct {
 
 // ForRunningProgram returns a Service with appropriate daemon defaults for the current running executable.
 func ForRunningProgram(name string, argv []string) *Service {
-	exe := filepath.Base(os.Args[0])
+	exe, err := os.Executable()
+	if err != nil {
+		panic(fmt.Errorf("Could not get executable path: %w", err))
+	}
 	return &Service{
 		Name:           name,
 		ExecutablePath: exe,
