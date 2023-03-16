@@ -1,9 +1,7 @@
 package launchd
 
 import (
-	"errors"
 	"fmt"
-	"io/fs"
 	"os"
 	"path/filepath"
 )
@@ -64,14 +62,9 @@ func launchAgentsDir() (dir string, err error) {
 	}
 
 	dir = filepath.Join(home, "Library", "LaunchAgents")
-
-	stat, err := os.Stat(dir)
-	if errors.Is(err, fs.ErrNotExist) {
-		return "", fmt.Errorf("Unexpected missing directory %s (%v)", dir, err)
-	}
-
-	if !stat.IsDir() {
-		return "", fmt.Errorf("Uh, %s exists but is not a directory somehow?", dir)
+	mkdirErr := os.MkdirAll(dir, 0700)
+	if mkdirErr != nil {
+		return "", fmt.Errorf("'%s' couldn't be created: %w", dir, err)
 	}
 	return
 }
